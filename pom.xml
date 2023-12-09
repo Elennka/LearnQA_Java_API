@@ -87,6 +87,7 @@
                             <artifactId>aspectjweaver</artifactId>
                             <version>${aspectj.version}</version>
                         </dependency>
+                        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
                     </dependencies>
                 </plugin>
                 <plugin>
