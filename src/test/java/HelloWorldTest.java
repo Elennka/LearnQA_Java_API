@@ -1,61 +1,86 @@
 import io.restassured.RestAssured;
-import io.restassured.path.json.JsonPath;
 
+import io.restassured.response.Response;
+import io.restassured.response.ResponseBody;
 import org.junit.jupiter.api.Test;
 
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-
-
 
 
 public class HelloWorldTest {
     @Test
-    public void testRestAssured(){
+    public void testRestAssured() throws IOException {
 
-        String urlTask = "https://playground.learnqa.ru/ajax/api/longtime_job";
 
-//создание задачи
-        JsonPath responseTask = RestAssured
-            .get(urlTask)
-            .jsonPath();
-        String token = responseTask.get("token");
-        int seconds = responseTask.get("seconds");
+        String filePath = "passwords.txt";
+        File file = new File(filePath);
+        BufferedReader reader = new BufferedReader(new FileReader(file));
 
-//Запрос сразу после получения token
+        String line = reader.readLine();
+        String[] parts = line.split("\t");
 
-        Map<String, String> params = new HashMap<>();
-        params.put("token",token);
-        JsonPath responseCheck = RestAssured
-               .given()
-               .queryParams(params)
-               .get(urlTask)
-               .jsonPath();
+        HashMap<String, List<String>> passwordMap = new HashMap<>();
+        //записываем значения ключей в хэшмэп
+        for (int i = 1; i < parts.length; i++)
+            passwordMap.put(parts[i], new ArrayList<String>());
 
-        String status = responseCheck.getString("status");
 
-        if (status.equals("Job is NOT ready"))
-            System.out.println("Задача еще не готова, нужно подождать " + seconds + " сек");
+        int year = 2010;
 
-        try {
-            Thread.sleep(seconds*1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        while ((line = reader.readLine()) != null) { //читаем строки их файла
+            parts = line.split("\t");
+
+            // записываем значения для ключей
+            for (int i = 1; i < parts.length; i++)
+                passwordMap.get(Integer.toString(year + i)).add(parts[i]);
+
         }
+        reader.close();
 
-// Запрос после истечени времени
-        responseCheck = RestAssured
-                .given()
-                .queryParams(params)
-                .get(urlTask)
-                .jsonPath();
-        String result = responseCheck.get("result");
-        status = responseCheck.get("status");
-        if (status.equals("Job is ready") && result!=null)
-            System.out.println("Задача готова, результат = " + responseCheck.get("result"));
-        else
-            System.out.println("По истечении " + seconds + " сек задача так и не готова");
+        Boolean correctValue = false;
+
+        for (List value : passwordMap.values()) {  // перебираем значения в хэшмэп
+            for (int i = 0; i < value.size(); i++) {
+
+                String adminPassword = value.get(i).toString();
+                Map<String, String> data = new HashMap<>();
+                data.put("login", "super_admin");
+                data.put("password", adminPassword);
+
+                Response responseForGet = RestAssured   //запрос на получение cookie
+                        .given()
+                        .body(data)
+                        .when()
+                        .get("https://playground.learnqa.ru/ajax/api/get_secret_password_homework")
+                        .andReturn();
+
+                String responseCookie = responseForGet.getCookie("auth_cookie");
+
+                Map<String, String> cookies = new HashMap<>();
+                cookies.put("auth_cookie", responseCookie);
+
+                Response responseForCheck = RestAssured   //запрос на проверку
+                        .given()
+                        .body(data)
+                        .cookies(cookies)
+                        .when()
+                        .post("https://playground.learnqa.ru/ajax/api/check_auth_cookie")
+                        .andReturn();
+
+                ResponseBody result = responseForCheck.getBody();
+                if (result.asString().equals("You are authorized")) {
+                    System.out.println(result.asString() + ". Ваш пароль: " + adminPassword);
+
+                    correctValue = true;
+                }
+                if (correctValue) break;
+            }
+            if (correctValue) break;
+        }
     }
 }
