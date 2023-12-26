@@ -1,5 +1,6 @@
 package tests;
 
+import io.qameta.allure.*;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -10,17 +11,19 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import io.qameta.allure.Description;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
+
 import org.junit.jupiter.api.DisplayName;
 import lib.ApiCoreRequests;
 
+import static io.qameta.allure.SeverityLevel.CRITICAL;
+import static io.qameta.allure.SeverityLevel.NORMAL;
 import static lib.DataGenerator.getRandomUsername;
 import static lib.DataGenerator.getWrongRandomEmail;
 
 @Epic("Editing user")
 @Feature("Editing")
+@Owner("Sidorov")
+@Severity(NORMAL)
 public class UserEditTest extends BaseTestCase {
 
     private final ApiCoreRequests apiCoreRequests = new ApiCoreRequests();

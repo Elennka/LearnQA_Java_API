@@ -1,5 +1,6 @@
 package tests;
 
+import io.qameta.allure.*;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -11,18 +12,20 @@ import lib.BaseTestCase;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
 import org.junit.jupiter.api.DisplayName;
 import lib.ApiCoreRequests;
 
+import static io.qameta.allure.SeverityLevel.CRITICAL;
+
 @Epic("Delete user")
 @Feature("Deleting")
+@Owner("Ivanov")
+@Severity(CRITICAL)
 public class UserDeleteTest extends BaseTestCase {
     private final ApiCoreRequests apiCoreRequests = new ApiCoreRequests();
 
     @Test
+    @Issue("DEL-123")
     @Description("This test checks deleting authorized user")
     @DisplayName("Test negative deleting user")
     public void testDeleteAuthorizedUser() {
@@ -45,6 +48,7 @@ public class UserDeleteTest extends BaseTestCase {
     }
 
     @Test
+    @Issue("DEL-123")
     @Description("This test checks deleting just created user")
     @DisplayName("Test positive deleting user")
     public void testDeleteJustCreatedUser() {
@@ -77,6 +81,7 @@ public class UserDeleteTest extends BaseTestCase {
     }
 
     @Test
+    @Issue("DEL-123")
     @Description("This test checks deleting user with authorization of another user")
     @DisplayName("Test negative deleting user")
     public void testDeleteUserWithAnotherAuthData() {
